@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
+import 'leaderboard_screen.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -104,6 +107,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           _timer?.cancel();
           _isGameOver = true;
           _animationController?.forward();
+          _saveScore(); // Сохранение результатов после окончания игры
         } else {
           _timerValue -= 0.1;
         }
@@ -124,6 +128,32 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         if (_questionIndex >= _questions.length) {
           _isGameOver = true;
           _animationController?.forward();
+          _saveScore(); // Сохранение результатов после окончания игры
+        }
+      });
+    }
+  }
+
+  Future<void> _saveScore() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentReference userScoreRef = FirebaseFirestore.instance.collection('scores').doc(user.uid);
+      DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot userScoreSnapshot = await transaction.get(userScoreRef);
+        DocumentSnapshot userSnapshot = await transaction.get(userRef);
+
+        if (!userScoreSnapshot.exists) {
+          transaction.set(userScoreRef, {
+            'bestScore': _score,
+            'nickname': userSnapshot['nickname'], // добавление поля nickname
+          });
+        } else {
+          int bestScore = userScoreSnapshot['bestScore'];
+          if (_score > bestScore) {
+            transaction.update(userScoreRef, {'bestScore': _score});
+          }
         }
       });
     }
@@ -139,6 +169,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _startTimer();
     });
     _animationController?.reset();
+  }
+
+  void _showLeaderboard() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => LeaderboardScreen()),
+    );
   }
 
   @override
@@ -215,6 +251,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           ),
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(200, 60), // Увеличение размера кнопки в два раза
+                            backgroundColor: Colors.blueAccent,
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                          ),
+                        ),
+                        SizedBox(height: 20), // Отступ перед кнопкой таблицы лидеров
+                        ElevatedButton(
+                          onPressed: _showLeaderboard,
+                          child: Text(
+                            'Таблица лидеров',
+                            style: TextStyle(fontSize: 24), // Увеличение размера текста кнопки
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(200, 60), // Увеличение размера кнопки
                             backgroundColor: Colors.blueAccent,
                             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                           ),

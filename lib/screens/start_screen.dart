@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'game_screen.dart';
+import 'login_screen.dart';
 
 class StartScreen extends StatelessWidget {
   @override
@@ -42,7 +43,10 @@ class StartScreen extends StatelessWidget {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Действие для кнопки "Войти"
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
                 },
                 child: Text('Войти'),
                 style: ElevatedButton.styleFrom(

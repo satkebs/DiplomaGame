@@ -1,7 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'screens/start_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/game_screen.dart';
+import 'screens/leaderboard_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -18,7 +27,13 @@ class MyApp extends StatelessWidget {
           backgroundColor: Color(0xFFB6FFFB), // Цвет фона для AppBar
         ),
       ),
-      home: StartScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => StartScreen(),
+        '/login': (context) => LoginScreen(),
+        '/game': (context) => GameScreen(),
+        '/leaderboard': (context) => LeaderboardScreen(),
+      },
     );
   }
 }

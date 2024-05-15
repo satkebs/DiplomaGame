@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LeaderboardScreen extends StatelessWidget {
   @override
@@ -9,31 +9,25 @@ class LeaderboardScreen extends StatelessWidget {
         title: Text('Таблица лидеров'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('scores')
-            .orderBy('bestScore', descending: true)
-            .limit(10)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+        stream: FirebaseFirestore.instance.collection('scores').orderBy('bestScore', descending: true).snapshots(),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-
-          final scores = snapshot.data!.docs;
-
+          if (snapshot.hasError) {
+            return Center(child: Text('Ошибка: ${snapshot.error}'));
+          }
+          final docs = snapshot.data?.docs ?? [];
           return ListView.builder(
-            itemCount: scores.length,
-            itemBuilder: (context, index) {
-              final score = scores[index];
-              final nickname = score['nickname']; // Извлечение никнейма из документа
-              final bestScore = score['bestScore'];
-
+            itemCount: docs.length,
+            itemBuilder: (ctx, index) {
+              final data = docs[index];
               return ListTile(
-                title: Text('Nickname: $nickname'),
-                subtitle: Text('Best Score: $bestScore'),
                 leading: CircleAvatar(
                   child: Text('#${index + 1}'),
                 ),
+                title: Text('Nickname: ${data['nickname']}'),
+                subtitle: Text('Best Score: ${data['bestScore']}'),
               );
             },
           );

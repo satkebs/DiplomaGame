@@ -1,17 +1,26 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'screens/start_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/game_screen.dart';
-import 'screens/leaderboard_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/start_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    // Здесь можно добавить код для отправки ошибок в логирующую систему
+  };
+
+  runZonedGuarded(() {
+    runApp(MyApp());
+  }, (error, stackTrace) {
+    print('Caught error: $error');
+    // Здесь можно добавить код для отправки ошибок в логирующую систему
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -27,13 +36,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Color(0xFFB6FFFB), // Цвет фона для AppBar
         ),
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => StartScreen(),
-        '/login': (context) => LoginScreen(),
-        '/game': (context) => GameScreen(),
-        '/leaderboard': (context) => LeaderboardScreen(),
-      },
+      home: StartScreen(),
     );
   }
 }

@@ -155,8 +155,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             transaction.update(userScoreRef, {'bestScore': _score});
           }
         }
+      }).catchError((error) {
+        _showErrorDialog('Ошибка сохранения результата. Попробуйте еще раз.');
       });
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Ошибка'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text('ОК'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
+      ),
+    );
   }
 
   void _restartGame() {

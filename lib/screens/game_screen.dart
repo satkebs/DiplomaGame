@@ -11,14 +11,14 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
-  int _questionIndex = 0;
-  int _score = 0;
-  bool _isGameOver = false;
-  double _timerValue = 10.0;
-  Timer? _timer;
-  List<Map<String, Object>> _questions = [];
-  AnimationController? _animationController;
-  Animation<double>? _fadeInAnimation;
+  int _questionIndex = 0; // Индекс текущего вопроса
+  int _score = 0; // Счет пользователя
+  bool _isGameOver = false; // Флаг окончания игры
+  double _timerValue = 10.0; // Значение таймера
+  Timer? _timer; // Объект таймера
+  List<Map<String, Object>> _questions = []; // Список вопросов
+  AnimationController? _animationController; // Контроллер анимации
+  Animation<double>? _fadeInAnimation; // Анимация плавного появления
 
   @override
   void initState() {
@@ -49,6 +49,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // Инициализация вопросов
   void _initializeQuestions() {
     _questions = [
       {'questionText': 'Сочетаются ли эти цвета?', 'colors': [Colors.lime, Colors.purple], 'answer': true},
@@ -95,10 +96,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     ];
   }
 
+  // Перемешивание вопросов
   void _shuffleQuestions() {
     _questions.shuffle();
   }
 
+  // Запуск таймера
   void _startTimer() {
     const oneTenth = const Duration(milliseconds: 100);
     _timer = Timer.periodic(oneTenth, (timer) {
@@ -115,6 +118,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
   }
 
+  // Обработка ответа на вопрос
   void _answerQuestion(bool answer) {
     if (_questionIndex < _questions.length) {
       setState(() {
@@ -134,6 +138,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Сохранение результата в Firebase Firestore
   Future<void> _saveScore() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -161,6 +166,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Показ диалога с ошибкой
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -179,6 +185,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+  // Перезапуск игры
   void _restartGame() {
     setState(() {
       _questionIndex = 0;
@@ -191,6 +198,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _animationController?.reset();
   }
 
+  // Переход к таблице лидеров
   void _showLeaderboard() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => LeaderboardScreen()),

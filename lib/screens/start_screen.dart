@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'game_screen.dart';
 import 'login_screen.dart';
 
 class StartScreen extends StatelessWidget {
+  final User? user;
+
+  // Конструктор принимает объект User, который может быть null, если пользователь не авторизован
+  StartScreen({required this.user});
+
+  // Функция для выхода из системы
+  void _signOut(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,6 +36,13 @@ class StartScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+              if (user != null) ...[
+                SizedBox(height: 20),
+                Text(
+                  'Добро пожаловать, ${user!.email}',
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                ),
+              ],
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
@@ -42,15 +60,17 @@ class StartScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: user != null
+                    ? () => _signOut(context)
+                    : () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
                 },
-                child: Text('Войти'),
+                child: Text(user != null ? 'Выйти' : 'Войти'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey,
+                  backgroundColor: user != null ? Colors.red : Colors.blueGrey,
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                   textStyle: TextStyle(fontSize: 20),
                 ),

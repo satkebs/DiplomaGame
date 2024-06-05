@@ -13,15 +13,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _nicknameController = TextEditingController();
   bool _isRegistering = false;
 
+  // Переключение между формами входа и регистрации
   void _toggleFormType() {
     setState(() {
       _isRegistering = !_isRegistering;
     });
   }
 
+  // Регистрация нового пользователя
   void _register() async {
     try {
-      // Проверяем, существует ли уже такой никнейм
+      // Проверка, существует ли уже такой никнейм
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('nickname', isEqualTo: _nicknameController.text.trim())
@@ -30,17 +32,20 @@ class _LoginScreenState extends State<LoginScreen> {
         throw FirebaseAuthException(code: 'nickname-already-in-use');
       }
 
+      // Создание нового пользователя с email и паролем
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
+      // Сохранение никнейма пользователя в Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
         'nickname': _nicknameController.text.trim(),
       });
 
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
+      // Обработка ошибок аутентификации
       String errorMessage;
       switch (e.code) {
         case 'email-already-in-use':
@@ -64,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Вход в систему существующего пользователя
   void _signIn() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -72,6 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
+      // Обработка ошибок аутентификации
       String errorMessage;
       switch (e.code) {
         case 'user-not-found':
@@ -92,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Показать диалог с ошибкой
   void _showErrorDialog(String message) {
     showDialog(
       context: context,

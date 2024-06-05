@@ -1,0 +1,11 @@
+[33mcommit ae68984854a6023ce6773a48c7f8d408ca456cd7[m[33m ([m[1;36mHEAD -> [m[1;32mnew-firebase-branch[m[33m, [m[1;31morigin/new-firebase-branch[m[33m)[m
+Author: Bektas <sapashev_bektas@mail.ru>
+Date:   Wed May 15 15:59:30 2024 +0500
+
+    Added Firebase authentication and Firestore integration for saving user scores
+
+[33mcommit bfd5818445808a732a20c1c27c275ee08799d416[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m, [m[1;32mbackup-before-firebase[m[33m, [m[1;32madd-firebase-again[m[33m, [m[1;32madd-firebase[m[33m)[m
+Author: Bektas <sapashev_bektas@mail.ru>
+Date:   Tue May 14 20:54:34 2024 +0500
+
+    Initial commit before adding Firebase

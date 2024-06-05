@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/start_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(MyApp());
 }
 
@@ -9,16 +14,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Color Match',
+      title: 'Color Match Game',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Color(0xFFB6FFFB), // Цвет фона для всего приложения
-        appBarTheme: AppBarTheme(
-          titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
-          backgroundColor: Color(0xFFB6FFFB), // Цвет фона для AppBar
-        ),
       ),
-      home: StartScreen(),
+      home: StreamBuilder<User?>(
+        // StreamBuilder для отслеживания состояния аутентификации пользователя
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Показать индикатор загрузки, если соединение в состоянии ожидания
+            return Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+          if (snapshot.hasError) {
+            // Показать ошибку, если есть проблема с аутентификацией
+            return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
+          }
+          // Передать текущего пользователя в StartScreen
+          return StartScreen(user: snapshot.data);
+        },
+      ),
     );
   }
 }

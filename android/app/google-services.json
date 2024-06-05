@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "737420532156",
+    "project_id": "colormatch-12f8b",
+    "storage_bucket": "colormatch-12f8b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737420532156:android:cea76af8ef32352bd673b9",
+        "android_client_info": {
+          "package_name": "com.example.color_match_game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrL76BTRDOq6Kge4iiH9Lthjxl0GE44Vs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

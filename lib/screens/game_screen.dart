@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
+import 'leaderboard_screen.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -8,14 +11,14 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
-  int _questionIndex = 0;
-  int _score = 0;
-  bool _isGameOver = false;
-  double _timerValue = 10.0;
-  Timer? _timer;
-  List<Map<String, Object>> _questions = [];
-  AnimationController? _animationController;
-  Animation<double>? _fadeInAnimation;
+  int _questionIndex = 0; // Индекс текущего вопроса
+  int _score = 0; // Счет пользователя
+  bool _isGameOver = false; // Флаг окончания игры
+  double _timerValue = 10.0; // Значение таймера
+  Timer? _timer; // Объект таймера
+  List<Map<String, Object>> _questions = []; // Список вопросов
+  AnimationController? _animationController; // Контроллер анимации
+  Animation<double>? _fadeInAnimation; // Анимация плавного появления
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // Инициализация вопросов
   void _initializeQuestions() {
     _questions = [
       {'questionText': 'Сочетаются ли эти цвета?', 'colors': [Colors.lime, Colors.purple], 'answer': true},
@@ -92,10 +96,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     ];
   }
 
+  // Перемешивание вопросов
   void _shuffleQuestions() {
     _questions.shuffle();
   }
 
+  // Запуск таймера
   void _startTimer() {
     const oneTenth = const Duration(milliseconds: 100);
     _timer = Timer.periodic(oneTenth, (timer) {
@@ -104,6 +110,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           _timer?.cancel();
           _isGameOver = true;
           _animationController?.forward();
+          _saveScore(); // Сохранение результатов после окончания игры
         } else {
           _timerValue -= 0.1;
         }
@@ -111,6 +118,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
   }
 
+  // Обработка ответа на вопрос
   void _answerQuestion(bool answer) {
     if (_questionIndex < _questions.length) {
       setState(() {
@@ -124,11 +132,60 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         if (_questionIndex >= _questions.length) {
           _isGameOver = true;
           _animationController?.forward();
+          _saveScore(); // Сохранение результатов после окончания игры
         }
       });
     }
   }
 
+  // Сохранение результата в Firebase Firestore
+  Future<void> _saveScore() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentReference userScoreRef = FirebaseFirestore.instance.collection('scores').doc(user.uid);
+      DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot userScoreSnapshot = await transaction.get(userScoreRef);
+        DocumentSnapshot userSnapshot = await transaction.get(userRef);
+
+        if (!userScoreSnapshot.exists) {
+          transaction.set(userScoreRef, {
+            'bestScore': _score,
+            'nickname': userSnapshot['nickname'], // добавление поля nickname
+          });
+        } else {
+          int bestScore = userScoreSnapshot['bestScore'];
+          if (_score > bestScore) {
+            transaction.update(userScoreRef, {'bestScore': _score});
+          }
+        }
+      }).catchError((error) {
+        _showErrorDialog('Ошибка сохранения результата. Попробуйте еще раз.');
+      });
+    }
+  }
+
+  // Показ диалога с ошибкой
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Ошибка'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text('ОК'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  // Перезапуск игры
   void _restartGame() {
     setState(() {
       _questionIndex = 0;
@@ -139,6 +196,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _startTimer();
     });
     _animationController?.reset();
+  }
+
+  // Переход к таблице лидеров
+  void _showLeaderboard() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => LeaderboardScreen()),
+    );
   }
 
   @override
@@ -215,6 +279,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           ),
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(200, 60), // Увеличение размера кнопки в два раза
+                            backgroundColor: Colors.blueAccent,
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                          ),
+                        ),
+                        SizedBox(height: 20), // Отступ перед кнопкой таблицы лидеров
+                        ElevatedButton(
+                          onPressed: _showLeaderboard,
+                          child: Text(
+                            'Таблица лидеров',
+                            style: TextStyle(fontSize: 24), // Увеличение размера текста кнопки
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(200, 60), // Увеличение размера кнопки
                             backgroundColor: Colors.blueAccent,
                             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                           ),
